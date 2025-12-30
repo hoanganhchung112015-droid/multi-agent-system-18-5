@@ -59,20 +59,29 @@ export default async function handler(req: Request) {
     }
 
     // 4. Gọi API Google Gemini với chế độ Stream (SSE)
-    const googleResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            temperature: 0.1
-          }
-        })
+  const googleResponse = await fetch(
+  // Sử dụng gemini-2.0-flash để có tốc độ nhanh nhất hiện nay
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts }],
+      generationConfig: {
+        // Chỉ dùng application/json khi bạn muốn kết quả trả về là JSON Object 
+        // (Ví dụ cho Tab 1 và Tab 3)
+        responseMimeType: "application/json", 
+        temperature: 0.1
       }
-    );
+    })
+  }
+);
+
+const data = await googleResponse.json();
+// Cách lấy text ra từ fetch thuần:
+const resultText = data.candidates[0].content.parts[0].text;
+    
+   
 
     // 5. Kiểm tra lỗi từ phía Google
     if (!googleResponse.ok) {
@@ -100,4 +109,5 @@ export default async function handler(req: Request) {
     });
   }
 }
+
 
